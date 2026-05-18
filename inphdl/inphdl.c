@@ -7,6 +7,8 @@
   distribution.
  ****************************************************************************/
 
+#include <stdlib.h>
+
 #include "inphdl/inphdl.h"
 
 #include "SDL.h"
@@ -31,6 +33,7 @@ struct IHandler IHandler;
 
 
 void gfxWaitTOF(void);
+void tcDone(void);
 
 
 static void inpDoPseudoMultiTasking(void)
@@ -122,6 +125,11 @@ S32 inpWaitFor(S32 l_Mask)
 
 	while (SDL_PollEvent(&ev)) {
 	    switch (ev.type) {
+	    case SDL_QUIT:
+		tcDone();
+		exit(0);
+		break;
+
 	    case SDL_KEYDOWN:
 		{
 		    switch (ev.key.keysym.sym) {

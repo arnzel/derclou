@@ -77,6 +77,7 @@ void gfxInit(void)
 
 	sw = sh = 0;
     } else {
+	flags |= SDL_WINDOW_RESIZABLE;
 	sw = SCREEN_WIDTH*setup.Scale;
 	sh = SCREEN_HEIGHT*setup.Scale;
     }
