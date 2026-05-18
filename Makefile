@@ -64,8 +64,17 @@ O_FILES = anim/sysanim.o \
 derclou: $(O_FILES)
 	$(CC) -o $@ */*.o `sdl2-config --libs` -lm
 
+derclou.dll: $(O_FILES)
+	$(CC) -shared -o $@ */*.o `sdl2-config --libs` -lm -Wl,--export-all-symbols
+
+derclou-host.exe: src/native/derclou_host.c derclou.dll
+	$(CC) -o $@ src/native/derclou_host.c
+
+libderclou.so: $(O_FILES)
+	$(CC) -shared -o $@ */*.o `sdl2-config --libs` -lm
+
 .c.o:
 	$(CC) `sdl2-config --cflags` -c -o $@ $<
 
 clean:
-	rm -f *~ *.o */*.o derclou
+	rm -f *~ *.o */*.o derclou derclou.dll derclou-host.exe libderclou.so
