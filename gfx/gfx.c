@@ -65,9 +65,12 @@ void gfxInit(void)
     Uint32 flags;
     int sw, sh;
 
-    SDL_InitSubSystem(SDL_INIT_VIDEO);
+    if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) {
+        DebugMsg(ERR_ERROR, ERROR_MODULE_GFX,
+                 "SDL_InitSubSystem: %s", SDL_GetError());
+    }
 
-    flags = SDL_WINDOW_OPENGL;
+    flags = 0;
 
     if (setup.FullScreen) {
         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -83,29 +86,49 @@ void gfxInit(void)
 	    SDL_WINDOWPOS_UNDEFINED,
 	    sw, sh,
 	    flags);
+    if (!sdlWindow) {
+        DebugMsg(ERR_ERROR, ERROR_MODULE_GFX,
+                 "SDL_CreateWindow: %s", SDL_GetError());
+    }
     sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, 0);
+    if (!sdlRenderer) {
+        DebugMsg(ERR_ERROR, ERROR_MODULE_GFX,
+                 "SDL_CreateRenderer: %s", SDL_GetError());
+    }
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
     SDL_RenderSetLogicalSize(sdlRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     windowSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT,
 	    24, 0, 0, 0, 0);
+    if (!windowSurface) {
+        DebugMsg(ERR_ERROR, ERROR_MODULE_GFX,
+                 "SDL_CreateRGBSurface: %s", SDL_GetError());
+    }
     sdlTexture = SDL_CreateTexture(sdlRenderer,
 	    SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING,
 	    SCREEN_WIDTH, SCREEN_HEIGHT);
+    if (!sdlTexture) {
+        DebugMsg(ERR_ERROR, ERROR_MODULE_GFX,
+                 "SDL_CreateTexture: %s", SDL_GetError());
+    }
 
     Screen = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT,
 	    8, 0, 0, 0, 0);
+    if (!Screen) {
+        DebugMsg(ERR_ERROR, ERROR_MODULE_GFX,
+                 "SDL_CreateRGBSurface: %s", SDL_GetError());
+    }
 
     gfxSetGC(NULL);
 
-    /* diese RP mÅssen nur ein Bild maximaler Grî·e aufnehmen kînnen */
-    /* in anderen Modulen wird vorausgesetzt, da· alle RastPorts gleich */
-    /* gro· sind und auch gleich gro· wie die StdBuffer sind */
+    /* diese RP mÔøΩssen nur ein Bild maximaler GrÔøΩÔøΩe aufnehmen kÔøΩnnen */
+    /* in anderen Modulen wird vorausgesetzt, daÔøΩ alle RastPorts gleich */
+    /* groÔøΩ sind und auch gleich groÔøΩ wie die StdBuffer sind */
     /* StdBuffer = 61 * 1024 = 62464, Mem: 62400 */
 
-    /* Ausnahme (nachtrÑglich) : der RefreshRP ist nur 320 * 140 Pixel gro·!! */
+    /* Ausnahme (nachtrÔøΩglich) : der RefreshRP ist nur 320 * 140 Pixel groÔøΩ!! */
 
-    gfxInitMemRastPort(&StdRP0InMem, SCREEN_WIDTH, SCREEN_HEIGHT); /* CMAP mu· auch Platz haben ! */
+    gfxInitMemRastPort(&StdRP0InMem, SCREEN_WIDTH, SCREEN_HEIGHT); /* CMAP muÔøΩ auch Platz haben ! */
     gfxInitMemRastPort(&StdRP1InMem, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     gfxInitMemRastPort(&AnimRPInMem, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -114,7 +137,7 @@ void gfxInit(void)
 
     gfxInitMemRastPort(&LSFloorRPInMem, SCREEN_WIDTH, 32);
 
-    /* der RefreshRP mu· den ganzen Bildschirm aufnehmen kînnen */
+    /* der RefreshRP muÔøΩ den ganzen Bildschirm aufnehmen kÔøΩnnen */
     gfxInitMemRastPort(&RefreshRPInMem, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     gfxInitMemRastPort(&ScratchRP, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -606,7 +629,7 @@ void gfxSetFont(GC *gc, Font *font)
     gc->font = font;
 }
 
-/* berechnet die LÑnge eines Textes in Pixel */
+/* berechnet die LÔøΩnge eines Textes in Pixel */
 U16 gfxTextWidth(GC *gc, const char *txt, size_t len)
 {
     size_t w;
@@ -673,9 +696,9 @@ void gfxPrepareColl(U16 collId)
 
 	/*
          * coll->prepared wird nicht mit dem ScratchRP initialisert, da
-	 * es sonst zu Inkonsistenzen kommen kînnte. Collections im Scratch
-	 * werden als nicht vorbereitet betrachtet, da der ScratchRP stÑndig
-	 * durch andere Bilder Åberschrieben wird
+	 * es sonst zu Inkonsistenzen kommen kÔøΩnnte. Collections im Scratch
+	 * werden als nicht vorbereitet betrachtet, da der ScratchRP stÔøΩndig
+	 * durch andere Bilder ÔøΩberschrieben wird
          */
         coll->prepared = NULL;
     }
@@ -1321,8 +1344,8 @@ void gfxILBMToRAW(const U8 *src, U8 *dst, size_t size)
 		pic = pic1;	/* Anfang der aktuellen Zeile */
 		b = ((w + 15) & 0xfff0);
 		do {
-		    a = *sp;	/* Kommando (wiederholen oder Åbernehmen */
-		    sp++;	/* nÑchstes Zeichen */
+		    a = *sp;	/* Kommando (wiederholen oder ÔøΩbernehmen */
+		    sp++;	/* nÔøΩchstes Zeichen */
 		    if (a > 128) {	/* Zeichen wiederholen */
 
 			a = 257 - a;
@@ -1334,7 +1357,7 @@ void gfxILBMToRAW(const U8 *src, U8 *dst, size_t size)
 			    pic += 8;
 			    b -= 8;
 			}
-		    } else {	/* Zeichen Åbernehmen */
+		    } else {	/* Zeichen ÔøΩbernehmen */
 
 			for (x = 0; x <= a; x++) {
 			    y = *sp;
